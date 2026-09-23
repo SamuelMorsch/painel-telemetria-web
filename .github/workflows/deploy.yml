@@ -63,13 +63,20 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
+            # 1. Força o carregamento do ambiente e do NVM para reconhecer o npm
+            source ~/.bashrc || true
+            source ~/.bash_profile || true
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
+            # 2. Navega até à pasta e extrai
             cd ~/painel-web
             tar -xzf painel.tar.gz
+            
+            # 3. Instala dependências e o PM2 (sem sudo, para usar o ambiente do próprio utilizador)
             npm install --omit=dev
+            npm install -g pm2
             
-            # Garante que o PM2 está instalado para manter o site no ar
-            sudo npm install -g pm2
-            
-            # Inicia ou reinicia o processo
+            # 4. Inicia ou reinicia o processo no PM2
             pm2 start npm --name "painel-obd" -- start || pm2 restart "painel-obd"
             pm2 save
