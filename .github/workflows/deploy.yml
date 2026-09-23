@@ -1,0 +1,75 @@
+name: CI/CD Pipeline - Painel Web
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Executar testes (Garantia de Qualidade da Banca)
+        run: npm run test
+
+      - name: Build de Produção
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+      - name: Compactar arquivos para deploy
+        run: tar -czf painel.tar.gz .next public package.json package-lock.json
+
+      - name: Guardar artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: painel-build
+          path: painel.tar.gz
+
+  deploy:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download do artefato
+        uses: actions/download-artifact@v4
+        with:
+          name: painel-build
+
+      - name: Enviar código para AWS EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "painel.tar.gz"
+          target: "~/painel-web"
+
+      - name: Iniciar Servidor na AWS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/painel-web
+            tar -xzf painel.tar.gz
+            npm install --omit=dev
+            
+            # Garante que o PM2 está instalado para manter o site no ar
+            sudo npm install -g pm2
+            
+            # Inicia ou reinicia o processo
+            pm2 start npm --name "painel-obd" -- start || pm2 restart "painel-obd"
+            pm2 save
