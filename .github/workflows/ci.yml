@@ -1,0 +1,44 @@
+name: CI - Painel Web
+
+on:
+  push:
+    branches: [main, v2]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Testes (com cobertura)
+        run: npm test
+      - name: Build de produção
+        run: npm run build
+
+  docker:
+    needs: test-build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    env:
+      ACTOR: ${{ github.actor }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Login no GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "$ACTOR" --password-stdin
+      - name: Build e publicação da imagem
+        run: |
+          IMAGE="ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/painel-telemetria-web"
+          TAG="${GITHUB_REF_NAME//\//-}"
+          docker build -t "$IMAGE:$TAG" -t "$IMAGE:${GITHUB_SHA::7}" .
+          docker push "$IMAGE:$TAG"
+          docker push "$IMAGE:${GITHUB_SHA::7}"
