@@ -51,7 +51,7 @@ function Overview() {
         if (!cancelled) setError(describeError(e));
       }
     };
-    load();
+    void load();
     const timer = setInterval(load, 10_000);
     return () => {
       cancelled = true;

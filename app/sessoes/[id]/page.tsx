@@ -63,7 +63,7 @@ function SessionView({ id }: { id: string }) {
   // 1) Dados da sessão e placa do veículo
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
         const found = await apiFetch<Session>(`/api/sessions/${id}`);
         const vehicles = await apiFetch<Vehicle[]>('/api/vehicles');
@@ -83,7 +83,7 @@ function SessionView({ id }: { id: string }) {
   useEffect(() => {
     if (!startedAt) return;
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
         if (isOpen) {
           const rows = await apiFetch<Reading[]>(`/api/sessions/${id}/readings?order=desc&limit=300`);
@@ -120,7 +120,7 @@ function SessionView({ id }: { id: string }) {
   useEffect(() => {
     if (!hasSession) return;
     let cancelled = false;
-    (async () => {
+    void (async () => {
       try {
         const rows = await apiFetch<Dtc[]>(`/api/sessions/${id}/dtcs`);
         if (!cancelled) setDtcs((current) => mergeDtcs(current, rows));
