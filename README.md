@@ -26,6 +26,29 @@ oficina.
 - **Códigos de falha:** lista com a descrição em português e o estado de cada código (confirmado ou pendente).
 - **Calibração:** o limite de tensão que define uma "queda" pode ser ajustado na tela.
 
+## Telas
+
+**Visão geral:** veículos, sessões recentes e as quedas de tensão detectadas.
+
+![Visão geral do painel: veículos, sessões recentes e quedas de tensão detectadas](docs/img/painel-visao-geral.png)
+
+**Sessão ao vivo:** a tensão cai de 14 V para 11,46 V com o motor a 3972 rpm. A queda é destacada no gráfico (faixa vermelha, abaixo do limite de 13 V) e o código de falha P0562 aparece com a descrição.
+
+![Sessão ao vivo: queda de tensão destacada no gráfico e código de falha P0562](docs/img/painel-sessao-ao-vivo.png)
+
+**Sessão encerrada:** o histórico completo, com a queda e os códigos de falha (confirmados e pendentes) marcados no tempo.
+
+![Sessão encerrada: histórico com a queda de tensão e os códigos de falha P0562 e P0622](docs/img/painel-sessao-encerrada.png)
+
+<details>
+<summary><strong>Tela de login</strong></summary>
+
+![Tela de login do painel](docs/img/painel-login.png)
+</details>
+
+> As telas mostram dados de uma **simulação** (as sessões aparecem marcadas como "Simulada") e veículos de teste.
+> Placas e dados de veículos reais foram ocultados nas imagens.
+
 ## Como funciona
 
 ```mermaid
